@@ -1,5 +1,5 @@
 /**
- * src/linked_list.h
+ * include/linked_list.h
  * Copyright (c) 2020 Matthew Murray <matt@compti.me>
  *
  * This software is provided 'as-is', without any express or implied

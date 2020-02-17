@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#include "../src/hash_map.h"
-#include "../src/hash.h"
+#include "hash_map.h"
+#include "hash.h"
 
 #include <assert.h>
 #include <stdio.h>

@@ -1,20 +1,16 @@
 inc = include_directories('../src')
 
 vector_exe = executable('vector', 'vector.c',
-  link_with : mylib_lib,
-  include_directories : inc)
+  dependencies : mylib_dep)
 
 bitset_exe = executable('bitset', 'bitset.c',
-  link_with : mylib_lib,
-  include_directories : inc)
+  dependencies : mylib_dep)
 
 linked_list_exe = executable('linked_list', 'linked_list.c',
-  link_with : mylib_lib,
-  include_directories : inc)
+  dependencies : mylib_dep)
 
 hash_map_exe = executable('hash_map', 'hash_map.c',
-  link_with : mylib_lib,
-  include_directories : inc)
+  dependencies : mylib_dep)
 
 test('vector', vector_exe, suite : 'vector')
 

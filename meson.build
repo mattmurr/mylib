@@ -3,15 +3,17 @@ project('mylib', 'c', version : '0.1.0', license : 'zlib',
 
 cc = meson.get_compiler('c')
 
-mylib_inc = include_directories('.', 'src')
+mylib_inc = include_directories('include')
 
 # dependencies
+
+# We currently have no dependencies, it's possible we may have some later.
 
 mylib_src = []
 # All the source files are in src directory
 subdir('src')
 
-install_headers('mylib.h')
+install_subdir('include', install_dir : 'include/mylib')
 
 mylib_lib = library('mylib', mylib_src, install : true,
   #dependencies : mylib_deps,
