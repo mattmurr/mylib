@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#include "bitset.h"
-#include "hash.h"
+#include "mylib/bitset.h"
+#include "mylib/hash.h"
 
 const uint32_t PRIME_32 = 16777619;
 const uint32_t OFFSET_32 = 2166136261;

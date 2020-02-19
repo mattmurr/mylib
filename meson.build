@@ -13,7 +13,7 @@ mylib_src = []
 # All the source files are in src directory
 subdir('src')
 
-install_subdir('include', install_dir : 'include/mylib')
+install_subdir('mylib', install_dir : 'include')
 
 mylib_lib = library('mylib', mylib_src, install : true,
   #dependencies : mylib_deps,
@@ -26,7 +26,7 @@ mylib_dep = declare_dependency(link_with : mylib_lib,
   version : meson.project_version())
 
 pkg = import('pkgconfig')
-pkg.generate(name : 'mylib', libraries : mylib_lib,
+pkg.generate(name : 'mylib', requires : ['mylib_lib'],
   description : 'My C library providing various data structures and utilities.',
   version : meson.project_version())
 

@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#include "hash_map.h"
-#include "linked_list.h"
+#include "mylib/hash_map.h"
+#include "mylib/linked_list.h"
 #include <string.h>
 
 #define HASHMAP_DEFAULT_INIT_CAPACITY 16
