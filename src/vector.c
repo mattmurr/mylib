@@ -106,10 +106,6 @@ size_t vector_size_in_bytes(const struct vector *vec) {
     return vec->size * vec->element_size;
 }
 
-int vector_has(const struct vector *vec, void *element) {
-    return vector_find(vec, element) >= vec->size;
-}
-
 int vector_assign(struct vector *vec, size_t idx, void *element) {
     if (vec == NULL)
         return EXIT_FAILURE;
