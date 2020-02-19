@@ -38,8 +38,6 @@ void vector_deinit(struct vector *vec);
 int vector_resize(struct vector *vec, size_t new_capacity);
 size_t vector_len(const struct vector *vec);
 size_t vector_size_in_bytes(const struct vector *vec);
-size_t vector_find(const struct vector *vec, void *element);
-int vector_has(const struct vector *vec, void *element);
 int vector_assign(struct vector *vec, size_t idx, void *element);
 int vector_append(struct vector *vec, void *element);
 int vector_insert(struct vector *vec, size_t idx, void *element);

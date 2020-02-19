@@ -1,5 +1,3 @@
-inc = include_directories('../src')
-
 vector_exe = executable('vector', 'vector.c',
   dependencies : mylib_dep)
 
