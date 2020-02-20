@@ -1,5 +1,5 @@
 project('mylib', 'c', version : '0.1.0', license : 'zlib',
-  default_options : ['c_std=c99'])
+  default_options : ['c_std=c11'])
 
 cc = meson.get_compiler('c')
 

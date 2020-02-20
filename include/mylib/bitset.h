@@ -1,5 +1,5 @@
 /**
- * include/bitset.h
+ * include/mylib/bitset.h
  * Copyright (c) 2020 Matthew Murray <matt@compti.me>
  *
  * This software is provided 'as-is', without any express or implied
