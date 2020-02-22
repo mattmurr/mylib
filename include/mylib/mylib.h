@@ -1,5 +1,5 @@
 /**
- * include/mylib/hash.h
+ * mylib.h
  * Copyright (c) 2020 Matthew Murray <matt@compti.me>
  *
  * This software is provided 'as-is', without any express or implied
@@ -18,14 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#ifndef MYLIB_HASH_H
-#define MYLIB_HASH_H
-
-#include <stddef.h>
-#include <stdint.h>
-
-uint32_t fnv1a_32_init();
-void fnv1a_32_update(uint32_t *val, const uint8_t *arr, size_t size);
-uint32_t fnv1a_32_hash(const uint8_t *arr, size_t size);
-
-#endif
+#include "bitset.h"
+#include "hash.h"
+#include "hash_map.h"
+#include "linked_list.h"
+#include "vector.h"

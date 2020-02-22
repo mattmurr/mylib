@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#ifndef MY_LIB_HASHMAP_H
-#define MY_LIB_HASHMAP_H
+#ifndef MYLIB_HASHMAP_H
+#define MYLIB_HASHMAP_H
 
 #include "linked_list.h"
 #include <stdint.h>

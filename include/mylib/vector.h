@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#ifndef MY_LIB_VECTOR_H
-#define MY_LIB_VECTOR_H
+#ifndef MYLIB_VECTOR_H
+#define MYLIB_VECTOR_H
 
 #include <stdlib.h>
 

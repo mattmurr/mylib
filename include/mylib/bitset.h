@@ -18,8 +18,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#ifndef MY_LIB_BITSET_H
-#define MY_LIB_BITSET_H
+#ifndef MYLIB_BITSET_H
+#define MYLIB_BITSET_H
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -29,14 +29,14 @@ struct bitset {
     size_t max;
 };
 
-int bitset_init(struct bitset *bs, size_t max);
+struct bitset *bitset_init(size_t max);
 void bitset_deinit(struct bitset *bs);
-int bitset_clone(const struct bitset *src, struct bitset *dest);
+struct bitset *bitset_clone(const struct bitset *src);
 size_t bitset_count(const struct bitset *bs);
 size_t bitset_size_in_bytes(const struct bitset *bs);
 void bitset_clear(struct bitset *bs);
 int bitset_has(const struct bitset *bs, size_t bit);
-void bitset_incl(struct bitset *bs, size_t bit);
+int bitset_incl(struct bitset *bs, size_t bit);
 void bitset_excl(struct bitset *bs, size_t bit);
 int bitset_next(const struct bitset *bs, size_t *i);
 
@@ -52,10 +52,9 @@ int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b);
 int bitset_eql(const struct bitset *a, const struct bitset *b);
 
 int bitset_intersects(const struct bitset *a, const struct bitset *b);
-int bitset_union(struct bitset *result, const struct bitset *a,
-                 const struct bitset *b);
-int bitset_difference(struct bitset *result, const struct bitset *a,
-                      const struct bitset *b);
+struct bitset *bitset_union(const struct bitset *a, const struct bitset *b);
+struct bitset *bitset_difference(const struct bitset *a,
+                                 const struct bitset *b);
 uint32_t bitset_hash(void *bs_ptr);
 
 #endif

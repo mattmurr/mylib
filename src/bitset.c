@@ -28,29 +28,42 @@ static size_t byte_count(size_t bit) { return get_byte(bit) + 1; }
 
 static uint8_t get_bit_offset(size_t bit) { return 7 - (bit % 8); }
 
-int bitset_init(struct bitset *bs, size_t max) {
+struct bitset *bitset_init(size_t max) {
     size_t required_bytes = byte_count(max);
-    if (!(bs->bytes = calloc(required_bytes, sizeof(uint8_t))))
-        return EXIT_FAILURE;
+    struct bitset *result = malloc(sizeof(struct bitset));
+    if (!result)
+        return NULL;
 
-    bs->max = max;
+    if (!(result->bytes = calloc(required_bytes, sizeof(uint8_t)))) {
+        free(result);
+        return NULL;
+    }
 
-    return EXIT_SUCCESS;
+    result->max = max;
+
+    return result;
 }
 
-void bitset_deinit(struct bitset *bs) { free(bs->bytes); }
+void bitset_deinit(struct bitset *bs) {
+    if (bs == NULL)
+        return;
 
-int bitset_clone(const struct bitset *src, struct bitset *dest) {
-    if (src == NULL || dest == NULL)
-        return EXIT_FAILURE;
+    free(bs->bytes);
+    free(bs);
+}
 
-    if (bitset_init(dest, src->max))
-        return EXIT_FAILURE;
+struct bitset *bitset_clone(const struct bitset *bs) {
+    if (bs == NULL)
+        return NULL;
 
-    size_t bytes_to_copy = byte_count(src->max);
-    memcpy(dest->bytes, src->bytes, sizeof(uint8_t) * bytes_to_copy);
+    struct bitset *result = bitset_init(bs->max);
+    if (!result)
+        return NULL;
 
-    return EXIT_SUCCESS;
+    size_t bytes_to_copy = byte_count(bs->max);
+    memcpy(result->bytes, bs->bytes, sizeof(uint8_t) * bytes_to_copy);
+
+    return result;
 }
 
 // Adapted for uint8_t from Hacker's Delight, p. 66, Figure 5-2.
@@ -63,10 +76,13 @@ static uint8_t popcount(uint8_t byte) {
 }
 
 size_t bitset_count(const struct bitset *bs) {
+    if (bs == NULL)
+        return 0;
+
     size_t bytes_to_count = byte_count(bs->max);
 
-    size_t result = 0;
-    for (size_t i = 0; i < bytes_to_count; i++) {
+    int result = 0;
+    for (int i = 0; i < bytes_to_count; i++) {
         result += popcount(bs->bytes[i]);
     }
 
@@ -74,39 +90,63 @@ size_t bitset_count(const struct bitset *bs) {
 }
 
 size_t bitset_size_in_bytes(const struct bitset *bs) {
+    if (bs == NULL)
+        return 0;
+
     return byte_count(bs->max);
 }
 
 void bitset_clear(struct bitset *bs) {
+    if (bs == NULL)
+        return;
+
     size_t bytes_to_clear = byte_count(bs->max);
     memset(bs->bytes, 0, sizeof(uint8_t) * bytes_to_clear);
 }
 
 int bitset_has(const struct bitset *bs, size_t bit) {
+    if (bs == NULL)
+        return 0;
     if (bit > bs->max)
         return 0;
+
     size_t byte = get_byte(bit);
     size_t offset = get_bit_offset(bit);
     return bs->bytes[byte] & (1 << offset);
 }
 
-void bitset_incl(struct bitset *bs, size_t bit) {
+int bitset_incl(struct bitset *bs, size_t bit) {
+    if (bs == NULL)
+        return EXIT_FAILURE;
+
     if (bit > bs->max)
-        return;
+        return EXIT_FAILURE;
+
     size_t byte = get_byte(bit);
     size_t offset = get_bit_offset(bit);
     bs->bytes[byte] |= ((uint8_t)1 << offset);
+
+    return EXIT_SUCCESS;
 }
 
 void bitset_excl(struct bitset *bs, size_t bit) {
+    if (bs == NULL)
+        return;
+
     if (bit > bs->max)
         return;
+
     size_t byte = get_byte(bit);
     size_t offset = get_bit_offset(bit);
     bs->bytes[byte] &= ~((uint8_t)1 << offset);
 }
 
 int bitset_next(const struct bitset *bs, size_t *i) {
+    if (bs == NULL)
+        return 0;
+    if (i == NULL)
+        return 0;
+
     while (*i <= bs->max) {
         if (bitset_has(bs, *i))
             return 1;
@@ -117,6 +157,13 @@ int bitset_next(const struct bitset *bs, size_t *i) {
 }
 
 int bitset_is_subset(const struct bitset *a, const struct bitset *b) {
+    // If both are NULL, they are then they are subsets of eachother?
+    /*if (a == NULL && b == NULL)*/
+    /*return 1;*/
+
+    if (a == NULL || b == NULL)
+        return 0;
+
     for (size_t i = 0; bitset_next(a, &i); i++) {
         if (!bitset_has(b, i))
             return 0;
@@ -125,10 +172,20 @@ int bitset_is_subset(const struct bitset *a, const struct bitset *b) {
 }
 
 int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b) {
+    if (a == NULL || b == NULL)
+        return 0;
+
     return bitset_is_subset(a, b) && !bitset_is_subset(b, a);
 }
 
 int bitset_eql(const struct bitset *a, const struct bitset *b) {
+    // If both are NULL, they are equal right?
+    /*if (a == NULL && b == NULL)*/
+    /*return 1;*/
+
+    if (a == NULL || b == NULL)
+        return 0;
+
     for (size_t i = 0; i < (a->max > b->max ? a->max : b->max); i++) {
         if (!(bitset_has(a, i) == bitset_has(b, i)))
             return 0;
@@ -137,6 +194,9 @@ int bitset_eql(const struct bitset *a, const struct bitset *b) {
 }
 
 int bitset_intersects(const struct bitset *a, const struct bitset *b) {
+    if (a == NULL || b == NULL)
+        return 0;
+
     for (size_t i = 0; bitset_next(a, &i); i++) {
         if (bitset_has(b, i))
             return 1;
@@ -145,29 +205,36 @@ int bitset_intersects(const struct bitset *a, const struct bitset *b) {
     return 0;
 }
 
-int bitset_union(struct bitset *result, const struct bitset *a,
-                 const struct bitset *b) {
+struct bitset *bitset_union(const struct bitset *a, const struct bitset *b) {
+    if (a == NULL || b == NULL)
+        return NULL;
+
     const struct bitset *largest = a->max > b->max ? a : b;
 
-    if (bitset_clone(largest, result))
-        return EXIT_FAILURE;
+    struct bitset *result = bitset_clone(largest);
+    if (!result)
+        return NULL;
 
+    // Loop over the all of the bytes in the smaller bitset and incl set bits.
     const struct bitset *smallest = largest == a ? b : a;
-    // Loop over the all of the bytes in the smallest bitset and incl set bits.
     size_t bytes_to_incl = byte_count(smallest->max);
     for (size_t i = 0; i < bytes_to_incl; i++) {
         result->bytes[i] |= smallest->bytes[i];
     }
 
-    return EXIT_SUCCESS;
+    return result;
 }
 
-int bitset_difference(struct bitset *result, const struct bitset *a,
-                      const struct bitset *b) {
+struct bitset *bitset_difference(const struct bitset *a,
+                                 const struct bitset *b) {
+    if (a == NULL || b == NULL)
+        return NULL;
+
     const struct bitset *largest = a->max > b->max ? a : b;
 
-    if (bitset_clone(largest, result))
-        return EXIT_FAILURE;
+    struct bitset *result = bitset_clone(largest);
+    if (!result)
+        return NULL;
 
     const struct bitset *smallest = largest == a ? b : a;
     size_t bytes_to_excl = byte_count(smallest->max);
@@ -175,10 +242,13 @@ int bitset_difference(struct bitset *result, const struct bitset *a,
         result->bytes[i] &= ~(smallest->bytes[i]);
     }
 
-    return EXIT_SUCCESS;
+    return result;
 }
 
 uint32_t bitset_hash(void *bs_ptr) {
+    if (bs_ptr == NULL)
+        return EXIT_FAILURE;
+
     struct bitset *bs = (struct bitset *)bs_ptr;
     return fnv1a_32_hash(bs->bytes, byte_count(bs->max));
 }
