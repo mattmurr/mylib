@@ -178,7 +178,7 @@ int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b) {
     return bitset_is_subset(a, b) && !bitset_is_subset(b, a);
 }
 
-int bitset_eql(const struct bitset *a, const struct bitset *b) {
+int bitset_eql(const void *a, const void *b) {
     // If both are NULL, they are equal right?
     /*if (a == NULL && b == NULL)*/
     /*return 1;*/
@@ -186,8 +186,13 @@ int bitset_eql(const struct bitset *a, const struct bitset *b) {
     if (a == NULL || b == NULL)
         return 0;
 
-    for (size_t i = 0; i < (a->max > b->max ? a->max : b->max); i++) {
-        if (!(bitset_has(a, i) == bitset_has(b, i)))
+    // Cast both of the bitsets.
+    const struct bitset *bs_a = a;
+    const struct bitset *bs_b = b;
+
+    for (size_t i = 0; i < (bs_a->max > bs_b->max ? bs_a->max : bs_b->max);
+         i++) {
+        if (!(bitset_has(bs_a, i) == bitset_has(bs_b, i)))
             return 0;
     }
     return 1;
@@ -245,10 +250,10 @@ struct bitset *bitset_difference(const struct bitset *a,
     return result;
 }
 
-uint32_t bitset_hash(void *bs_ptr) {
-    if (bs_ptr == NULL)
+uint32_t bitset_hash(const void *bs) {
+    if (bs == NULL)
         return EXIT_FAILURE;
 
-    struct bitset *bs = (struct bitset *)bs_ptr;
-    return fnv1a_32_hash(bs->bytes, byte_count(bs->max));
+    const struct bitset *casted = bs;
+    return fnv1a_32_hash(casted->bytes, byte_count(casted->max));
 }

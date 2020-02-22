@@ -49,12 +49,12 @@ int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b);
 
 // Returns true if both sets are the same size, `a` has all of it's elements in
 // `b` and `b` has all of it's elements in `a`.
-int bitset_eql(const struct bitset *a, const struct bitset *b);
+int bitset_eql(const void *a, const void *b);
 
 int bitset_intersects(const struct bitset *a, const struct bitset *b);
 struct bitset *bitset_union(const struct bitset *a, const struct bitset *b);
 struct bitset *bitset_difference(const struct bitset *a,
                                  const struct bitset *b);
-uint32_t bitset_hash(void *bs_ptr);
+uint32_t bitset_hash(const void *bs);
 
 #endif
