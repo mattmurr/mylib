@@ -83,5 +83,16 @@ int main() {
         assert(val > 0 && val <= 15);
     }
 
+    key = "getorputkey";
+    int has_existing;
+    assert(kv = hash_map_get_or_put(map, &key, &has_existing));
+    assert(has_existing == 0);
+
+    val = 8195;
+
+    assert(!hash_map_kv_assign(map, kv, &val));
+
+    assert(*((int *)hash_map_get_value(map, &key)) == val);
+
     hash_map_deinit(map);
 }
