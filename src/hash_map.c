@@ -274,7 +274,7 @@ struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map, void *key,
     struct hash_map_kv *kv = hash_map_get_or_put(map, key, has_existing);
 
     // This cannot fail as we have checked all of the prerequisites already.
-    hash_map_kv_assign(map, kv, value);
+    assert(!hash_map_kv_assign(map, kv, value));
 
     return kv;
 }
