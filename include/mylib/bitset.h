@@ -51,7 +51,11 @@ int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b);
 // `b` and `b` has all of it's elements in `a`.
 int bitset_eql(const void *a, const void *b);
 
-int bitset_intersects(const struct bitset *a, const struct bitset *b);
+// If there is no intersections between the two bitsets, this function will
+// return 0, otherwise the returned value is the cardinality of the intersecting
+// bits.
+size_t bitset_intersects(const struct bitset *a, const struct bitset *b);
+
 struct bitset *bitset_union(const struct bitset *a, const struct bitset *b);
 struct bitset *bitset_difference(const struct bitset *a,
                                  const struct bitset *b);

@@ -198,16 +198,18 @@ int bitset_eql(const void *a, const void *b) {
     return 1;
 }
 
-int bitset_intersects(const struct bitset *a, const struct bitset *b) {
+size_t bitset_intersects(const struct bitset *a, const struct bitset *b) {
     if (a == NULL || b == NULL)
         return 0;
 
+    size_t result = 0;
+
     for (size_t i = 0; bitset_next(a, &i); i++) {
         if (bitset_has(b, i))
-            return 1;
+            result++;
     }
 
-    return 0;
+    return result;
 }
 
 struct bitset *bitset_union(const struct bitset *a, const struct bitset *b) {
