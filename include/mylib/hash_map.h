@@ -1,22 +1,24 @@
 /**
- * include/mylib/hash_map.h
+ * mylib/hash_map.h
  * Copyright (c) 2020 Matthew Murray <matt@compti.me>
  *
- * This software is provided 'as-is', without any express or implied
- * warranty.  In no event will the authors be held liable for any damages
- * arising from the use of this software.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * Permission is granted to anyone to use this software for any purpose,
- * including commercial applications, and to alter it and redistribute it
- * freely, subject to the following restrictions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * 1. The origin of this software must not be misrepresented; you must not
- *    claim that you wrote the original software. If you use this software
- *    in a product, an acknowledgment in the product documentation would be
- *    appreciated but is not required.
- * 2. Altered source versions must be plainly marked as such, and must not be
- *    misrepresented as being the original software.
- * 3. This notice may not be removed or altered from any source distribution.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 #ifndef MYLIB_HASHMAP_H
 #define MYLIB_HASHMAP_H
@@ -29,25 +31,25 @@ typedef uint32_t (*HashMapHashFn)(const void *key);
 typedef int32_t (*HashMapEqlFn)(const void *a, const void *b);
 
 struct hash_map_kv {
-    void *key;
-    void *value;
+  void *key;
+  void *value;
 };
 
 struct hash_map {
-    size_t size;                  // How many entries are in the map.
-    size_t capacity;              // How many buckets are allocated.
-    size_t key_size;              // Byte size of the key.
-    size_t value_size;            // Byte size of the value.
-    struct linked_list **buckets; // Array of linked_list to avoid collisions.
+  size_t size;                  // How many entries are in the map.
+  size_t capacity;              // How many buckets are allocated.
+  size_t key_size;              // Byte size of the key.
+  size_t value_size;            // Byte size of the value.
+  struct linked_list **buckets; // Array of linked_list to avoid collisions.
 
-    HashMapHashFn hash; // The hash function.
-    HashMapEqlFn eql;   // The eql function.
+  HashMapHashFn hash; // The hash function.
+  HashMapEqlFn eql;   // The eql function.
 };
 
 struct hash_map_iterator {
-    const struct hash_map *map;    // Pointer to the map.
-    size_t bucket_idx;             // The current bucket being iterated.
-    struct linked_list_node *node; // The current node.
+  const struct hash_map *map;    // Pointer to the map.
+  size_t bucket_idx;             // The current bucket being iterated.
+  struct linked_list_node *node; // The current node.
 };
 
 struct hash_map *hash_map_init(HashMapHashFn hash, HashMapEqlFn eql,
