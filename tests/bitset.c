@@ -34,6 +34,13 @@ int main() {
     // Ensure that the bitset has 10 set.
     assert(bitset_has(bs, 10));
 
+    // Test bitset_first.
+    {
+        size_t first;
+        assert(bitset_first(bs, &first));
+        assert(first == 1);
+    }
+
     // Check that the bitset now has 2 bits set.
     assert(bitset_count(bs) == 2);
 

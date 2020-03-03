@@ -40,6 +40,9 @@ int bitset_incl(struct bitset *bs, size_t bit);
 void bitset_excl(struct bitset *bs, size_t bit);
 int bitset_next(const struct bitset *bs, size_t *i);
 
+// Simply uses bitset_next to retrieve the first set bit in the set.
+int bitset_first(const struct bitset *bs, size_t *first);
+
 // Returns true if `a` has all of it's elements in `b`.
 int bitset_is_subset(const struct bitset *a, const struct bitset *b);
 

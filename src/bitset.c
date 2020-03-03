@@ -118,7 +118,6 @@ int bitset_has(const struct bitset *bs, size_t bit) {
 int bitset_incl(struct bitset *bs, size_t bit) {
     if (bs == NULL)
         return EXIT_FAILURE;
-
     if (bit > bs->max)
         return EXIT_FAILURE;
 
@@ -154,6 +153,14 @@ int bitset_next(const struct bitset *bs, size_t *i) {
     }
 
     return 0;
+}
+
+int bitset_first(const struct bitset *bs, size_t *first) {
+    if (first == NULL)
+        return EXIT_FAILURE;
+
+    *first = 0;
+    return bitset_next(bs, first);
 }
 
 int bitset_is_subset(const struct bitset *a, const struct bitset *b) {
