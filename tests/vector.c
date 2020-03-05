@@ -55,4 +55,7 @@ int main() {
   // Test swap delete.
   vector_swap_delete(vec, 20);
   assert(*((const int *)vector_get_const(vec, 20)) == 0);
+
+  vector_deinit(vec);
+  vector_deinit(clone);
 }

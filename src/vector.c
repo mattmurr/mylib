@@ -84,7 +84,13 @@ struct vector *vector_clone(const struct vector *src) {
   return result;
 }
 
-void vector_deinit(struct vector *vec) { free(vec->data); }
+void vector_deinit(struct vector *vec) {
+  if (vec == NULL)
+    return;
+
+  free(vec->data);
+  free(vec);
+}
 
 int vector_resize(struct vector *vec, size_t new_capacity) {
   if (vec == NULL)
