@@ -108,9 +108,16 @@ int vector_resize(struct vector *vec, size_t new_capacity) {
   return EXIT_SUCCESS;
 }
 
-size_t vector_len(const struct vector *vec) { return vec->size; }
+size_t vector_len(const struct vector *vec) {
+  if (vec == NULL)
+    return 0;
+
+  return vec->size;
+}
 
 size_t vector_size_in_bytes(const struct vector *vec) {
+  if (vec == NULL)
+    return 0;
   return vec->size * vec->element_size;
 }
 

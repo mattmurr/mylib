@@ -78,8 +78,8 @@ static struct linked_list *get_bucket(const struct hash_map *map,
   return map->buckets[map->hash(key) % map->capacity];
 }
 
-static int prepend(const struct hash_map *map, struct linked_list *bucket,
-                   void *key, void *value) {
+static int prepend(struct hash_map *map, struct linked_list *bucket, void *key,
+                   void *value) {
   assert(map != NULL);
   assert(bucket != NULL);
   assert(key != NULL);
@@ -102,6 +102,8 @@ static int prepend(const struct hash_map *map, struct linked_list *bucket,
   // Prepend the kv to the bucket.
   if (linked_list_prepend(bucket, &kv, sizeof(struct hash_map_kv)))
     goto err;
+
+  map->size++;
 
   return EXIT_SUCCESS;
 
@@ -225,7 +227,6 @@ int hash_map_put(struct hash_map *map, void *key, void *value) {
     // Construct the kv and try to prepend it to the bucket.
     if (prepend(map, bucket, key, value))
       return EXIT_FAILURE;
-    map->size++;
   } else {
     struct hash_map_kv *kv = find_key(node, key, map->eql);
     if (kv) {
@@ -244,8 +245,8 @@ int hash_map_put(struct hash_map *map, void *key, void *value) {
   return EXIT_SUCCESS;
 }
 
-struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
-                                        int *has_existing) {
+const struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
+                                              int *has_existing) {
   if (map == NULL)
     return NULL;
 
@@ -258,7 +259,6 @@ struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
   if (!node) {
     if (prepend(map, bucket, key, NULL))
       return NULL;
-    map->size++;
   } else {
     struct hash_map_kv *kv = find_key(node, key, map->eql);
     // The key exists, return it now.
@@ -272,15 +272,17 @@ struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
 
   if (has_existing)
     *has_existing = 0;
+
   return bucket->first->data;
 }
 
-struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map, void *key,
-                                              void *value, int *has_existing) {
+const struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map,
+                                                    void *key, void *value,
+                                                    int *has_existing) {
   if (value == NULL)
     return NULL;
 
-  struct hash_map_kv *kv = hash_map_get_or_put(map, key, has_existing);
+  const struct hash_map_kv *kv = hash_map_get_or_put(map, key, has_existing);
 
   // This cannot fail as we have checked all of the prerequisites already.
   assert(!hash_map_kv_assign(map, kv, value));
@@ -338,7 +340,7 @@ void hash_map_delete(struct hash_map *map, const void *key) {
   linked_list_delete(bucket, node);
 }
 
-int hash_map_kv_assign(struct hash_map *map, struct hash_map_kv *kv,
+int hash_map_kv_assign(struct hash_map *map, const struct hash_map_kv *kv,
                        void *value) {
   if (map == NULL)
     return EXIT_FAILURE;
@@ -363,13 +365,10 @@ struct hash_map_kv *hash_map_next(struct hash_map_iterator *iterator) {
   if (iterator->map == NULL || iterator->map->size == 0)
     return NULL;
 
-  while (iterator->bucket_idx < iterator->map->capacity) {
-    if (iterator->node && (iterator->node = iterator->node->next)) {
+  while (iterator->bucket_idx < iterator->map->capacity)
+    if ((iterator->node =
+             iterator->map->buckets[iterator->bucket_idx++]->first))
       return iterator->node->data;
-    }
-
-    iterator->node = iterator->map->buckets[iterator->bucket_idx++]->first;
-  }
 
   return NULL;
 }

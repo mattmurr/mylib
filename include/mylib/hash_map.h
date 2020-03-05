@@ -58,16 +58,17 @@ void hash_map_deinit(struct hash_map *map);
 void hash_map_clear(struct hash_map *map);
 size_t hash_map_count(const struct hash_map *map);
 int hash_map_put(struct hash_map *map, void *key, void *value);
-struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
-                                        int *has_existing);
-struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map, void *key,
-                                              void *value, int *has_existing);
+const struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
+                                              int *has_existing);
+const struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map,
+                                                    void *key, void *value,
+                                                    int *has_existing);
 struct hash_map_kv *hash_map_get(const struct hash_map *map, const void *key);
 void *hash_map_get_value(const struct hash_map *map, const void *key);
 int hash_map_has(const struct hash_map *map, const void *key);
 void hash_map_delete(struct hash_map *map, const void *key);
 
-int hash_map_kv_assign(struct hash_map *map, struct hash_map_kv *kv,
+int hash_map_kv_assign(struct hash_map *map, const struct hash_map_kv *kv,
                        void *value);
 
 struct hash_map_iterator hash_map_iter(const struct hash_map *map);

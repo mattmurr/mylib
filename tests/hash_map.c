@@ -78,7 +78,7 @@ int main() {
 
   // Iterate the map.
   struct hash_map_iterator iter = hash_map_iter(map);
-  struct hash_map_kv *kv;
+  const struct hash_map_kv *kv;
   while ((kv = hash_map_next(&iter))) {
     val = *((int *)kv->value);
     // Val should be > 0 and less than or equal to 15.
@@ -95,6 +95,12 @@ int main() {
   assert(!hash_map_kv_assign(map, kv, &val));
 
   assert(*((int *)hash_map_get_value(map, &key)) == val);
+
+  hash_map_clear(map);
+  assert(!hash_map_put(map, &key, &val));
+  iter = hash_map_iter(map);
+
+  assert(hash_map_next(&iter) != NULL);
 
   hash_map_deinit(map);
 }
