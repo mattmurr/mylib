@@ -71,6 +71,10 @@ static void deinit_buckets(struct linked_list **buckets, size_t count) {
 
 static struct linked_list *get_bucket(const struct hash_map *map,
                                       const void *key) {
+  assert(map != NULL);
+  assert(key != NULL);
+  assert(map->capacity > 0);
+
   return map->buckets[map->hash(key) % map->capacity];
 }
 
@@ -150,12 +154,15 @@ struct hash_map *hash_map_init(HashMapHashFn hash, HashMapEqlFn eql,
   if (eql == NULL)
     return NULL;
 
-  struct hash_map *result = malloc(sizeof(struct hash_map));
+  struct hash_map *result = calloc(1, sizeof(struct hash_map));
   if (!result)
     return NULL;
 
-  result->buckets = NULL;
-  result->capacity = 0;
+  if (ensure_capacity(result)) {
+    free(result);
+    return NULL;
+  }
+
   result->size = 0;
   result->key_size = key_size;
   result->value_size = value_size;
