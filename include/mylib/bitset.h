@@ -26,44 +26,40 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-struct bitset {
+typedef struct Bitset {
   uint8_t *bytes; // Allocated bytes.
   size_t max;
-};
+} Bitset;
 
-struct bitset *bitset_init(size_t max);
-void bitset_deinit(struct bitset *bs);
-struct bitset *bitset_clone(const struct bitset *src);
-size_t bitset_count(const struct bitset *bs);
-size_t bitset_size_in_bytes(const struct bitset *bs);
-void bitset_clear(struct bitset *bs);
-int bitset_has(const struct bitset *bs, size_t bit);
-int bitset_incl(struct bitset *bs, size_t bit);
-void bitset_excl(struct bitset *bs, size_t bit);
-int bitset_next(const struct bitset *bs, size_t *i);
+int bitset_init(Bitset *result, size_t max);
+void bitset_deinit(Bitset *bs);
+int bitset_clone(const Bitset *src, Bitset *result);
+size_t bitset_count(const Bitset *bs);
+size_t bitset_size_in_bytes(const Bitset *bs);
+void bitset_clear(Bitset *bs);
+int bitset_has(const Bitset *bs, size_t bit);
+int bitset_incl(Bitset *bs, size_t bit);
+void bitset_excl(Bitset *bs, size_t bit);
+int bitset_next(const Bitset *bs, size_t *i);
 
 // Simply uses bitset_next to retrieve the first set bit in the set.
-int bitset_first(const struct bitset *bs, size_t *first);
+int bitset_first(const Bitset *bs, size_t *first);
 
 // Returns true if `a` has all of it's elements in `b`.
-int bitset_is_subset(const struct bitset *a, const struct bitset *b);
+int bitset_is_subset(const Bitset *a, const Bitset *b);
 
 // Returns true if `a` has all of it's elements in `b`, but `b` does not have
 // all of its elements in `a`.
-int bitset_is_proper_subset(const struct bitset *a, const struct bitset *b);
+int bitset_is_proper_subset(const Bitset *a, const Bitset *b);
 
 // Returns true if both sets are the same size, `a` has all of it's elements in
 // `b` and `b` has all of it's elements in `a`.
 int bitset_eql(const void *a, const void *b);
 
-// If there is no intersections between the two bitsets, this function will
-// return 0, otherwise the returned value is the cardinality of the intersecting
-// bits.
-size_t bitset_intersects(const struct bitset *a, const struct bitset *b);
+int bitset_intersects(const Bitset *a, const Bitset *b);
 
-struct bitset *bitset_union(const struct bitset *a, const struct bitset *b);
-struct bitset *bitset_difference(const struct bitset *a,
-                                 const struct bitset *b);
+int bitset_union(const Bitset *a, const Bitset *b, Bitset *result);
+int bitset_difference(const Bitset *a, const Bitset *b, Bitset *result);
 uint32_t bitset_hash(const void *bs);
 
 #endif
