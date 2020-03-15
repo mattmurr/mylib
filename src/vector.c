@@ -21,80 +21,72 @@
  * SOFTWARE.
  */
 #include "mylib/vector.h"
+#include <assert.h>
 #include <string.h>
 
 #define DEFAULT_INIT_CAPACITY 4
 
-static void *get_offset(struct vector *vec, size_t idx) {
+static void *get_offset(Vector *vec, size_t idx) {
   return vec->data + (idx * vec->element_size);
 }
 
-static const void *get_offset_const(const struct vector *vec, size_t idx) {
+static const void *get_offset_const(const Vector *vec, size_t idx) {
   return vec->data + (idx * vec->element_size);
 }
 
-static int try_grow(struct vector *vec) {
+static int try_grow(Vector *vec) {
   return vec->size >= vec->capacity ? vector_resize(vec, vec->size * 2)
                                     : EXIT_SUCCESS;
 }
 
-static void assign(struct vector *vec, size_t idx, void *element) {
+static void assign(Vector *vec, size_t idx, void *element) {
   void *offset = get_offset(vec, idx);
   memcpy(offset, element, vec->element_size);
 }
 
-struct vector *vector_init_with_capacity(size_t element_size, size_t capacity) {
-  if (element_size == 0)
-    return NULL;
+int vector_init_with_capacity(Vector *result, size_t element_size,
+                              size_t capacity) {
+  assert(result != NULL);
 
-  struct vector *result = malloc(sizeof(struct vector));
-  if (!result)
-    return NULL;
+  *result = (Vector){0};
 
   result->data = malloc(capacity * element_size);
-  if (!result->data) {
-    free(result);
-    return NULL;
-  }
+  if (!result->data)
+    return EXIT_FAILURE;
 
   result->size = 0;
   result->capacity = capacity;
   result->element_size = element_size;
 
-  return result;
+  return EXIT_SUCCESS;
 }
 
-struct vector *vector_init(size_t element_size) {
-  return vector_init_with_capacity(element_size, DEFAULT_INIT_CAPACITY);
+int vector_init(Vector *result, size_t element_size) {
+  return vector_init_with_capacity(result, element_size, DEFAULT_INIT_CAPACITY);
 }
 
-struct vector *vector_clone(const struct vector *src) {
-  if (src == NULL)
-    return NULL;
+int vector_clone(const Vector *src, Vector *result) {
+  assert(src != NULL);
+  assert(result != NULL);
 
-  struct vector *result =
-      vector_init_with_capacity(src->element_size, src->size * 2);
-  if (!result)
-    return NULL;
+  if (vector_init_with_capacity(result, src->element_size, src->size * 2))
+    return EXIT_FAILURE;
 
   memcpy(result->data, src->data, src->size * src->element_size);
 
   result->size = src->size;
 
-  return result;
+  return EXIT_SUCCESS;
 }
 
-void vector_deinit(struct vector *vec) {
-  if (vec == NULL)
-    return;
+void vector_deinit(Vector *vec) {
+  assert(vec != NULL);
 
   free(vec->data);
-  free(vec);
 }
 
-int vector_resize(struct vector *vec, size_t new_capacity) {
-  if (vec == NULL)
-    return EXIT_FAILURE;
+int vector_resize(Vector *vec, size_t new_capacity) {
+  assert(vec != NULL);
 
   void *data = realloc(vec->data, vec->element_size * new_capacity);
   if (!data)
@@ -108,24 +100,20 @@ int vector_resize(struct vector *vec, size_t new_capacity) {
   return EXIT_SUCCESS;
 }
 
-size_t vector_len(const struct vector *vec) {
-  if (vec == NULL)
-    return 0;
-
+size_t vector_len(const Vector *vec) {
+  assert(vec != NULL);
   return vec->size;
 }
 
-size_t vector_size_in_bytes(const struct vector *vec) {
-  if (vec == NULL)
-    return 0;
+size_t vector_size_in_bytes(const Vector *vec) {
+  assert(vec != NULL);
   return vec->size * vec->element_size;
 }
 
-int vector_assign(struct vector *vec, size_t idx, void *element) {
-  if (vec == NULL)
-    return EXIT_FAILURE;
-  if (element == NULL)
-    return EXIT_FAILURE;
+int vector_assign(Vector *vec, size_t idx, void *element) {
+  assert(vec != NULL);
+  assert(element != NULL);
+
   if (idx >= vec->size)
     return EXIT_FAILURE;
 
@@ -134,11 +122,9 @@ int vector_assign(struct vector *vec, size_t idx, void *element) {
   return EXIT_SUCCESS;
 }
 
-int vector_append(struct vector *vec, void *element) {
-  if (vec == NULL)
-    return EXIT_FAILURE;
-  if (element == NULL)
-    return EXIT_FAILURE;
+int vector_append(Vector *vec, void *element) {
+  assert(vec != NULL);
+  assert(element != NULL);
 
   if (try_grow(vec))
     return EXIT_FAILURE;
@@ -149,11 +135,10 @@ int vector_append(struct vector *vec, void *element) {
   return EXIT_SUCCESS;
 }
 
-int vector_insert(struct vector *vec, size_t idx, void *element) {
-  if (vec == NULL)
-    return EXIT_FAILURE;
-  if (element == NULL)
-    return EXIT_FAILURE;
+int vector_insert(Vector *vec, size_t idx, void *element) {
+  assert(vec != NULL);
+  assert(element != NULL);
+
   if (idx > vec->size)
     return EXIT_FAILURE;
 
@@ -177,27 +162,27 @@ int vector_insert(struct vector *vec, size_t idx, void *element) {
   return EXIT_SUCCESS;
 }
 
-void *vector_get(struct vector *vec, size_t idx) {
-  if (vec == NULL)
-    return NULL;
+void *vector_get(Vector *vec, size_t idx) {
+  assert(vec != NULL);
+
   if (idx >= vec->size)
     return NULL;
 
   return get_offset(vec, idx);
 }
 
-const void *vector_get_const(const struct vector *vec, size_t idx) {
-  if (vec == NULL)
-    return NULL;
+const void *vector_get_const(const Vector *vec, size_t idx) {
+  assert(vec != NULL);
+
   if (idx >= vec->size)
     return NULL;
 
   return get_offset_const(vec, idx);
 }
 
-void vector_delete(struct vector *vec, size_t idx) {
-  if (vec == NULL)
-    return;
+void vector_delete(Vector *vec, size_t idx) {
+  assert(vec != NULL);
+
   if (idx >= vec->size)
     return;
 
@@ -213,9 +198,9 @@ void vector_delete(struct vector *vec, size_t idx) {
     vector_resize(vec, vec->size / 2);
 }
 
-void vector_swap_delete(struct vector *vec, size_t idx) {
-  if (vec == NULL)
-    return;
+void vector_swap_delete(Vector *vec, size_t idx) {
+  assert(vec != NULL);
+
   if (idx >= vec->size)
     return;
 
@@ -228,6 +213,6 @@ void vector_swap_delete(struct vector *vec, size_t idx) {
   vector_delete(vec, vec->size - 1);
 }
 
-void vector_clear(struct vector *vec) { vector_resize(vec, 0); }
+void vector_clear(Vector *vec) { vector_resize(vec, 0); }
 
-void vector_shrink_to_fit(struct vector *vec) { vector_resize(vec, vec->size); }
+void vector_shrink_to_fit(Vector *vec) { vector_resize(vec, vec->size); }

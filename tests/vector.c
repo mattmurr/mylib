@@ -24,38 +24,45 @@
 #include <assert.h>
 
 int main() {
-  struct vector *vec = vector_init(sizeof(int));
-  assert(vec != NULL);
+  Vector vec;
+  assert(!vector_init(&vec, sizeof(int)));
 
-  int a = 5;
+  {
+    int a = 5;
 
-  // Add a value and ensure that the value is retrievable.
-  assert(!vector_append(vec, &a));
-  assert(*((int *)vector_get(vec, 0)) == a);
+    // Add a value and ensure that the value is retrievable.
+    assert(!vector_append(&vec, &a));
+    assert(*((int *)vector_get_const(&vec, 0)) == a);
+  }
 
   // Fill the vector up
   for (int i = 0; i < 50; i++) {
-    assert(!vector_insert(vec, 0, &i));
-    assert(*((int *)vector_get(vec, 0)) == i);
+    assert(!vector_insert(&vec, 0, &i));
+    assert(*((int *)vector_get_const(&vec, 0)) == i);
   }
 
   // Clone the vector and ensure that it has the correct size.
-  struct vector *clone = vector_clone(vec);
-  assert(clone != NULL);
+  {
+    Vector clone;
+    assert(!vector_clone(&vec, &clone));
+    assert(vector_len(&clone) == 51);
 
-  assert(vector_len(clone) == 51);
+    vector_deinit(&clone);
+  }
 
-  vector_delete(vec, 50);
+  // Delete the value in the 50th index which is the back of the vector.
+  vector_delete(&vec, vector_len(&vec) - 1);
 
-  // Iterate the array.
-  int *arr = vec->data;
-  for (size_t i = 0; i < vector_len(vec); i++)
-    assert(arr[i] == 49 - i);
+  {
+    // Iterate the vector.
+    int *arr = vec.data;
+    for (size_t i = 0; i < vector_len(&vec); i++)
+      assert(arr[i] == 49 - i);
+  }
 
   // Test swap delete.
-  vector_swap_delete(vec, 20);
-  assert(*((const int *)vector_get_const(vec, 20)) == 0);
+  vector_swap_delete(&vec, 20);
+  assert(*((const int *)vector_get_const(&vec, 20)) == 0);
 
-  vector_deinit(vec);
-  vector_deinit(clone);
+  vector_deinit(&vec);
 }

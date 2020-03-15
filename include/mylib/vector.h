@@ -25,29 +25,30 @@
 
 #include <stdlib.h>
 
-struct vector {
+typedef struct Vector {
   size_t size;
   size_t capacity;
   size_t element_size;
 
   void *data;
-};
+} Vector;
 
-struct vector *vector_init_with_capacity(size_t element_size, size_t capacity);
-struct vector *vector_init(size_t element_size);
-struct vector *vector_clone(const struct vector *src);
-void vector_deinit(struct vector *vec);
-int vector_resize(struct vector *vec, size_t new_capacity);
-size_t vector_len(const struct vector *vec);
-size_t vector_size_in_bytes(const struct vector *vec);
-int vector_assign(struct vector *vec, size_t idx, void *element);
-int vector_append(struct vector *vec, void *element);
-int vector_insert(struct vector *vec, size_t idx, void *element);
-void *vector_get(struct vector *vec, size_t idx);
-const void *vector_get_const(const struct vector *vec, size_t idx);
-void vector_delete(struct vector *vec, size_t idx);
-void vector_swap_delete(struct vector *vec, size_t idx);
-void vector_clear(struct vector *vec);
-void vector_shrink_to_fit(struct vector *vec);
+int vector_init_with_capacity(Vector *result, size_t element_size,
+                              size_t capacity);
+int vector_init(Vector *result, size_t element_size);
+int vector_clone(const Vector *src, Vector *result);
+void vector_deinit(Vector *vec);
+int vector_resize(Vector *vec, size_t new_capacity);
+size_t vector_len(const Vector *vec);
+size_t vector_size_in_bytes(const Vector *vec);
+int vector_assign(Vector *vec, size_t idx, void *element);
+int vector_append(Vector *vec, void *element);
+int vector_insert(Vector *vec, size_t idx, void *element);
+void *vector_get(Vector *vec, size_t idx);
+const void *vector_get_const(const Vector *vec, size_t idx);
+void vector_delete(Vector *vec, size_t idx);
+void vector_swap_delete(Vector *vec, size_t idx);
+void vector_clear(Vector *vec);
+void vector_shrink_to_fit(Vector *vec);
 
 #endif
