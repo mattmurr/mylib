@@ -28,36 +28,23 @@
 
 #define HASHMAP_DEFAULT_INIT_CAPACITY 16
 
-static int init_buckets(struct linked_list **buckets, size_t count) {
-  size_t i;
-  for (i = 0; i < count; i++) {
-    // If we failed to initialize any of the buckets, we're going free
-    // everything.
-    if (!(buckets[i] = linked_list_init()))
-      goto err;
-  }
+static int init_buckets(LinkedList *buckets, size_t count) {
+  for (size_t i = 0; i < count; i++)
+    buckets[i] = linked_list_init();
 
   return EXIT_SUCCESS;
-
-err:
-  while (i > 0) {
-    free(buckets[i]);
-    i--;
-  }
-
-  return EXIT_FAILURE;
 }
 
-static void deinit_buckets(struct linked_list **buckets, size_t count) {
-  // Incase we are trying to deinit/clear a deinitialized map.
+static void deinit_buckets(LinkedList *buckets, size_t count) {
+  // Just return if buckets is NULL.
   if (buckets == NULL)
     return;
 
   for (size_t i = 0; i < count; i++) {
-    struct linked_list_node *node = buckets[i]->first;
+    LinkedListNode *node = buckets[i].first;
     if (node) {
       do {
-        struct hash_map_kv *kv = node->data;
+        HashMapKV *kv = node->data;
         free(kv->key);
         free(kv->value);
       } while ((node = node->next));
@@ -65,26 +52,16 @@ static void deinit_buckets(struct linked_list **buckets, size_t count) {
   }
 
   for (size_t i = 0; i < count; i++) {
-    linked_list_deinit(buckets[i]);
+    linked_list_deinit(&buckets[i]);
   }
 }
 
-static struct linked_list *get_bucket(const struct hash_map *map,
-                                      const void *key) {
-  assert(map != NULL);
-  assert(key != NULL);
-  assert(map->capacity > 0);
-
-  return map->buckets[map->hash(key) % map->capacity];
+static LinkedList *get_bucket(const HashMap *map, const void *key) {
+  return &map->buckets[map->hash(key) % map->capacity];
 }
 
-static int prepend(struct hash_map *map, struct linked_list *bucket, void *key,
-                   void *value) {
-  assert(map != NULL);
-  assert(bucket != NULL);
-  assert(key != NULL);
-
-  struct hash_map_kv kv;
+static int prepend(HashMap *map, LinkedList *bucket, void *key, void *value) {
+  HashMapKV kv = {0};
 
   // Allocate memory for the key and value.
   kv.key = malloc(map->key_size);
@@ -100,7 +77,7 @@ static int prepend(struct hash_map *map, struct linked_list *bucket, void *key,
     memcpy(kv.value, value, map->value_size);
 
   // Prepend the kv to the bucket.
-  if (linked_list_prepend(bucket, &kv, sizeof(struct hash_map_kv)))
+  if (linked_list_prepend(bucket, &kv, sizeof(HashMapKV)))
     goto err;
 
   map->size++;
@@ -114,11 +91,9 @@ err:
   return EXIT_FAILURE;
 }
 
-static int resize(struct hash_map *map, size_t new_capacity) {
-  assert(map != NULL);
-
-  struct linked_list **new_buckets =
-      realloc(map->buckets, new_capacity * sizeof(struct linked_list *));
+static int resize(HashMap *map, size_t new_capacity) {
+  LinkedList *new_buckets =
+      realloc(map->buckets, new_capacity * sizeof(LinkedList));
   if (!new_buckets)
     return EXIT_FAILURE;
 
@@ -133,9 +108,7 @@ static int resize(struct hash_map *map, size_t new_capacity) {
   return EXIT_SUCCESS;
 }
 
-static int ensure_capacity(struct hash_map *map) {
-  assert(map != NULL);
-
+static int ensure_capacity(HashMap *map) {
   if (map->capacity > 0 && map->size <= map->capacity)
     return EXIT_SUCCESS;
 
@@ -148,22 +121,16 @@ static int ensure_capacity(struct hash_map *map) {
   return EXIT_SUCCESS;
 }
 
-struct hash_map *hash_map_init(HashMapHashFn hash, HashMapEqlFn eql,
-                               size_t key_size, size_t value_size) {
-  if (hash == NULL)
-    return NULL;
+int hash_map_init(HashMap *result, HashMapHashFn hash, HashMapEqlFn eql,
+                  size_t key_size, size_t value_size) {
+  assert(result != NULL);
+  assert(hash != NULL);
+  assert(eql != NULL);
 
-  if (eql == NULL)
-    return NULL;
+  *result = (HashMap){0};
 
-  struct hash_map *result = calloc(1, sizeof(struct hash_map));
-  if (!result)
-    return NULL;
-
-  if (ensure_capacity(result)) {
-    free(result);
-    return NULL;
-  }
+  if (ensure_capacity(result))
+    return EXIT_FAILURE;
 
   result->size = 0;
   result->key_size = key_size;
@@ -171,13 +138,12 @@ struct hash_map *hash_map_init(HashMapHashFn hash, HashMapEqlFn eql,
   result->hash = hash;
   result->eql = eql;
 
-  return result;
+  return EXIT_SUCCESS;
 }
 
 // Just clears all of the buckets and sets the size to zero.
-void hash_map_clear(struct hash_map *map) {
-  if (map == NULL)
-    return;
+void hash_map_clear(HashMap *map) {
+  assert(map != NULL);
 
   deinit_buckets(map->buckets, map->capacity);
   map->size = 0;
@@ -185,22 +151,23 @@ void hash_map_clear(struct hash_map *map) {
 }
 
 // Clear all of the buckets and deinitialize the buckets array.
-void hash_map_deinit(struct hash_map *map) {
+void hash_map_deinit(HashMap *map) {
+  assert(map != NULL);
+
   // We also ensure is not NULL inside hash_map_clear.
   hash_map_clear(map);
-
   free(map->buckets);
-  free(map);
 }
 
-size_t hash_map_count(const struct hash_map *map) {
+size_t hash_map_count(const HashMap *map) {
+  assert(map != NULL);
   return map != NULL ? map->size : 0;
 }
 
-static struct hash_map_kv *find_key(struct linked_list_node *node,
-                                    const void *key, HashMapEqlFn eql) {
+static HashMapKV *find_key(LinkedListNode *node, const void *key,
+                           HashMapEqlFn eql) {
   do {
-    struct hash_map_kv *kv = node->data;
+    HashMapKV *kv = node->data;
     if (eql(key, kv->key))
       return kv;
   } while ((node = node->next));
@@ -208,27 +175,24 @@ static struct hash_map_kv *find_key(struct linked_list_node *node,
   return NULL;
 }
 
-int hash_map_put(struct hash_map *map, void *key, void *value) {
-  if (map == NULL)
-    return EXIT_FAILURE;
-
-  if (key == NULL)
-    return EXIT_FAILURE;
+int hash_map_put(HashMap *map, void *key, void *value) {
+  assert(map != NULL);
+  assert(key != NULL);
 
   // Ensure that the map has enough capacity for this new kv.
   if (ensure_capacity(map))
     return EXIT_FAILURE;
 
   // Get the bucket.
-  struct linked_list *bucket = get_bucket(map, key);
-  struct linked_list_node *node = bucket->first;
+  LinkedList *bucket = get_bucket(map, key);
+  LinkedListNode *node = bucket->first;
 
   if (!node) {
     // Construct the kv and try to prepend it to the bucket.
     if (prepend(map, bucket, key, value))
       return EXIT_FAILURE;
   } else {
-    struct hash_map_kv *kv = find_key(node, key, map->eql);
+    HashMapKV *kv = find_key(node, key, map->eql);
     if (kv) {
       // Assign the new value.
       kv->value = value;
@@ -245,22 +209,19 @@ int hash_map_put(struct hash_map *map, void *key, void *value) {
   return EXIT_SUCCESS;
 }
 
-const struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
-                                              int *has_existing) {
-  if (map == NULL)
-    return NULL;
+const HashMapKV *hash_map_get_or_put(HashMap *map, void *key,
+                                     int *has_existing) {
+  assert(map != NULL);
+  assert(key != NULL);
 
-  if (key == NULL)
-    return NULL;
-
-  struct linked_list *bucket = get_bucket(map, key);
-  struct linked_list_node *node = bucket->first;
+  LinkedList *bucket = get_bucket(map, key);
+  LinkedListNode *node = bucket->first;
 
   if (!node) {
     if (prepend(map, bucket, key, NULL))
       return NULL;
   } else {
-    struct hash_map_kv *kv = find_key(node, key, map->eql);
+    HashMapKV *kv = find_key(node, key, map->eql);
     // The key exists, return it now.
     if (kv) {
       if (has_existing)
@@ -276,31 +237,15 @@ const struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
   return bucket->first->data;
 }
 
-const struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map,
-                                                    void *key, void *value,
-                                                    int *has_existing) {
-  if (value == NULL)
-    return NULL;
+HashMapKV *hash_map_get(const HashMap *map, const void *key) {
+  assert(map != NULL);
+  assert(key != NULL);
 
-  const struct hash_map_kv *kv = hash_map_get_or_put(map, key, has_existing);
-
-  // This cannot fail as we have checked all of the prerequisites already.
-  assert(!hash_map_kv_assign(map, kv, value));
-
-  return kv;
-}
-
-struct hash_map_kv *hash_map_get(const struct hash_map *map, const void *key) {
-  if (map == NULL)
-    return NULL;
-
+  // HashMap contains no entries, quick exit.
   if (map->size == 0)
     return NULL;
 
-  if (key == NULL)
-    return NULL;
-
-  struct linked_list_node *node = get_bucket(map, key)->first;
+  LinkedListNode *node = get_bucket(map, key)->first;
 
   if (!node)
     return NULL;
@@ -308,31 +253,31 @@ struct hash_map_kv *hash_map_get(const struct hash_map *map, const void *key) {
   return find_key(node, key, map->eql);
 }
 
-void *hash_map_get_value(const struct hash_map *map, const void *key) {
-  struct hash_map_kv *kv = hash_map_get(map, key);
+void *hash_map_get_value(const HashMap *map, const void *key) {
+  HashMapKV *kv = hash_map_get(map, key);
   return kv ? kv->value : NULL;
 }
 
-int hash_map_has(const struct hash_map *map, const void *key) {
+int hash_map_has(const HashMap *map, const void *key) {
   return hash_map_get(map, key) != NULL;
 }
 
-void hash_map_delete(struct hash_map *map, const void *key) {
-  if (map == NULL)
-    return;
+void hash_map_delete(HashMap *map, const void *key) {
+  assert(map != NULL);
+  assert(key != NULL);
+
+  // HashMap is empty, quick exit.
   if (map->size == 0)
     return;
-  if (key == NULL)
-    return;
 
-  struct linked_list *bucket = get_bucket(map, key);
-  struct linked_list_node *node = bucket->first;
+  LinkedList *bucket = get_bucket(map, key);
+  LinkedListNode *node = bucket->first;
 
   if (!node)
     return;
 
   // Find the node that contains the key then call linked_list_delete.
-  struct hash_map_kv *kv = find_key(node, key, map->eql);
+  HashMapKV *kv = find_key(node, key, map->eql);
 
   free(kv->key);
   free(kv->value);
@@ -340,34 +285,27 @@ void hash_map_delete(struct hash_map *map, const void *key) {
   linked_list_delete(bucket, node);
 }
 
-int hash_map_kv_assign(struct hash_map *map, const struct hash_map_kv *kv,
-                       void *value) {
-  if (map == NULL)
-    return EXIT_FAILURE;
-  if (kv == NULL)
-    return EXIT_FAILURE;
-  if (value == NULL)
-    return EXIT_FAILURE;
+void hash_map_kv_assign(HashMap *map, const HashMapKV *kv, void *value) {
+  assert(map != NULL);
+  assert(kv != NULL);
+  assert(value != NULL);
 
   memcpy(kv->value, value, map->value_size);
-
-  return EXIT_SUCCESS;
 }
 
-struct hash_map_iterator hash_map_iter(const struct hash_map *map) {
-  struct hash_map_iterator result = {0};
+HashMapIterator hash_map_iter(const HashMap *map) {
+  HashMapIterator result = {0};
   result.map = map;
 
   return result;
 }
 
-struct hash_map_kv *hash_map_next(struct hash_map_iterator *iterator) {
+HashMapKV *hash_map_next(HashMapIterator *iterator) {
   if (iterator->map == NULL || iterator->map->size == 0)
     return NULL;
 
   while (iterator->bucket_idx < iterator->map->capacity)
-    if ((iterator->node =
-             iterator->map->buckets[iterator->bucket_idx++]->first))
+    if ((iterator->node = iterator->map->buckets[iterator->bucket_idx++].first))
       return iterator->node->data;
 
   return NULL;

@@ -25,42 +25,37 @@
 
 #include <stdlib.h>
 
-struct linked_list_node {
+typedef struct LinkedListNode {
   void *data;
-  struct linked_list_node *next;
-};
+  struct LinkedListNode *next;
+} LinkedListNode;
 
-struct linked_list {
-  struct linked_list_node *first; // Pointer to the first node in the list.
-};
+typedef struct LinkedList {
+  LinkedListNode *first; // Pointer to the first node in the list.
+} LinkedList;
 
-struct linked_list_node *linked_list_node_init(void *data, size_t element_size);
+LinkedListNode *linked_list_node_init(void *data, size_t element_size);
 
-void linked_list_node_deinit(struct linked_list_node *node);
+void linked_list_node_deinit(LinkedListNode *node);
 
-struct linked_list *linked_list_init();
+LinkedList linked_list_init();
 
-void linked_list_clear(struct linked_list *list);
+LinkedListNode *linked_list_pop_first(LinkedList *list);
 
-void linked_list_deinit(struct linked_list *list);
+void linked_list_clear(LinkedList *list);
 
-int linked_list_prepend_node(struct linked_list *list,
-                             struct linked_list_node *node);
+void linked_list_deinit(LinkedList *list);
 
-int linked_list_prepend(struct linked_list *list, void *data,
-                        size_t element_size);
+int linked_list_prepend_node(LinkedList *list, LinkedListNode *node);
 
-int linked_list_insert_node_after(struct linked_list *list,
-                                  struct linked_list_node *node,
-                                  struct linked_list_node *new_node);
+int linked_list_prepend(LinkedList *list, void *data, size_t element_size);
 
-int linked_list_insert_after(struct linked_list *list,
-                             struct linked_list_node *node, void *data,
+int linked_list_insert_node_after(LinkedListNode *node,
+                                  LinkedListNode *new_node);
+
+int linked_list_insert_after(LinkedList *list, LinkedListNode *node, void *data,
                              size_t element_size);
 
-void linked_list_delete(struct linked_list *list,
-                        struct linked_list_node *node);
-
-struct linked_list_node *linked_list_pop_first(struct linked_list *list);
+void linked_list_delete(LinkedList *list, LinkedListNode *node);
 
 #endif

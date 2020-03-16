@@ -30,48 +30,53 @@
 typedef uint32_t (*HashMapHashFn)(const void *key);
 typedef int32_t (*HashMapEqlFn)(const void *a, const void *b);
 
-struct hash_map_kv {
+typedef struct HashMapKV {
   void *key;
   void *value;
-};
+} HashMapKV;
 
-struct hash_map {
-  size_t size;                  // How many entries are in the map.
-  size_t capacity;              // How many buckets are allocated.
-  size_t key_size;              // Byte size of the key.
-  size_t value_size;            // Byte size of the value.
-  struct linked_list **buckets; // Array of linked_list to avoid collisions.
+typedef struct HashMap {
+  size_t size;         // How many entries are in the map.
+  size_t capacity;     // How many buckets are allocated.
+  size_t key_size;     // Byte size of the key.
+  size_t value_size;   // Byte size of the value.
+  LinkedList *buckets; // Array of linked_list to avoid collisions.
 
   HashMapHashFn hash; // The hash function.
   HashMapEqlFn eql;   // The eql function.
-};
+} HashMap;
 
-struct hash_map_iterator {
-  const struct hash_map *map;    // Pointer to the map.
-  size_t bucket_idx;             // The current bucket being iterated.
-  struct linked_list_node *node; // The current node.
-};
+typedef struct HashMapIterator {
+  const HashMap *map;   // Pointer to the map.
+  size_t bucket_idx;    // The current bucket being iterated.
+  LinkedListNode *node; // The current node.
+} HashMapIterator;
 
-struct hash_map *hash_map_init(HashMapHashFn hash, HashMapEqlFn eql,
-                               size_t key_size, size_t value_size);
-void hash_map_deinit(struct hash_map *map);
-void hash_map_clear(struct hash_map *map);
-size_t hash_map_count(const struct hash_map *map);
-int hash_map_put(struct hash_map *map, void *key, void *value);
-const struct hash_map_kv *hash_map_get_or_put(struct hash_map *map, void *key,
-                                              int *has_existing);
-const struct hash_map_kv *hash_map_get_or_put_value(struct hash_map *map,
-                                                    void *key, void *value,
-                                                    int *has_existing);
-struct hash_map_kv *hash_map_get(const struct hash_map *map, const void *key);
-void *hash_map_get_value(const struct hash_map *map, const void *key);
-int hash_map_has(const struct hash_map *map, const void *key);
-void hash_map_delete(struct hash_map *map, const void *key);
+int hash_map_init(HashMap *result, HashMapHashFn hash, HashMapEqlFn eql,
+                  size_t key_size, size_t value_size);
 
-int hash_map_kv_assign(struct hash_map *map, const struct hash_map_kv *kv,
-                       void *value);
+void hash_map_deinit(HashMap *map);
 
-struct hash_map_iterator hash_map_iter(const struct hash_map *map);
-struct hash_map_kv *hash_map_next(struct hash_map_iterator *iterator);
+void hash_map_clear(HashMap *map);
+
+size_t hash_map_count(const HashMap *map);
+
+int hash_map_put(HashMap *map, void *key, void *value);
+
+const HashMapKV *hash_map_get_or_put(HashMap *map, void *key,
+                                     int *has_existing);
+HashMapKV *hash_map_get(const HashMap *map, const void *key);
+
+void *hash_map_get_value(const HashMap *map, const void *key);
+
+int hash_map_has(const HashMap *map, const void *key);
+
+void hash_map_delete(HashMap *map, const void *key);
+
+void hash_map_kv_assign(HashMap *map, const HashMapKV *kv, void *value);
+
+HashMapIterator hash_map_iter(const HashMap *map);
+
+HashMapKV *hash_map_next(HashMapIterator *iterator);
 
 #endif
