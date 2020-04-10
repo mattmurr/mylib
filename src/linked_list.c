@@ -112,7 +112,7 @@ int linked_list_insert_after(LinkedList *list, LinkedListNode *node, void *data,
   assert(list != NULL);
 
   LinkedListNode *new_node = linked_list_node_init(data, element_size);
-  if (!node)
+  if (!new_node)
     return EXIT_FAILURE;
 
   return linked_list_insert_node_after(node, new_node);
