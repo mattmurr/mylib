@@ -61,7 +61,7 @@ static LinkedList *get_bucket(const HashMap *map, const void *key) {
 }
 
 static int prepend(HashMap *map, LinkedList *bucket, void *key, void *value) {
-  HashMapKV kv = {0};
+  HashMapKV kv;
 
   // Allocate memory for the key and value.
   kv.key = malloc(map->key_size);

@@ -39,53 +39,55 @@ int main() {
   HashMap map;
   assert(!hash_map_init(&map, hash_str, eql_str, sizeof(char *), sizeof(int)));
 
-  char *key = "myfirstkey";
-  int val = 95;
+  {
+    const char *key = "myfirstkey";
+    int val = 95;
 
-  // Put the key and value into the map.
-  // Check that the count is now 1 and that the value can be accessed.
-  assert(!hash_map_put(&map, &key, &val));
-  assert(hash_map_count(&map) == 1);
-  assert(*((int *)hash_map_get_value(&map, &key)) == val);
+    // Put the key and value into the map, check that the count is now 1 and
+    // that the value can be accessed.
+    assert(!hash_map_put(&map, &key, &val));
+    assert(hash_map_count(&map) == 1);
+    assert(*((int *)hash_map_get_value(&map, &key)) == val);
+  }
 
-  // Expected to not return anything.
-  key = "wedonthavethiskey";
-  assert(!hash_map_has(&map, &key));
+  // Try to get a value using a key that isn't in the map
+  {
+    const char *key = "wedonthavethiskey";
+    assert(!hash_map_has(&map, &key));
+  }
 
-  // Clear the map then add some new values.
   hash_map_clear(&map);
+  assert(hash_map_count(&map) == 0);
 
-  for (unsigned long i = 1; i <= 15; i++) {
-    const int n = snprintf(NULL, 0, "%lu", i);
+  // Generate the keys and values.
+  for (unsigned long i = 0; i < 15; i++) {
+    const size_t n = snprintf(NULL, 0, "%lu", i);
     char buf[n + 1];
     assert(snprintf(buf, n + 1, "%lu", i) == n);
 
-    // We cant add zero as a key because it would translate to a NULL pointer.
     assert(!hash_map_put(&map, &buf, &i));
-    // Check that the value is added correctly.
     assert(*((int *)hash_map_get_value(&map, &buf)) == i);
   }
 
-  // Iterate the map.
+  // Iterate the map, each value should be under 15 like the above loop
   HashMapIterator iter = hash_map_iter(&map);
   const HashMapKV *kv;
-  while ((kv = hash_map_next(&iter))) {
-    val = *((int *)kv->value);
-    // Val should be > 0 and less than or equal to 15.
-    assert(val > 0 && val <= 15);
+  while ((kv = hash_map_next(&iter)))
+    assert(*(int *)kv->value < 15);
+
+  // Use `hash_map_get_or_put()` to put a new kv pair into the map
+  {
+    const char *key = "getorputkey";
+    // `has_existing` should be 0
+    int has_existing;
+    assert(kv = hash_map_get_or_put(&map, &key, &has_existing));
+    assert(has_existing == 0);
+
+    // Assign a value to `kv` and ensure that we can get that value again
+    int val = 999;
+    hash_map_kv_assign(&map, kv, &val);
+    assert(*((int *)hash_map_get_value(&map, &key)) == val);
   }
-
-  // Attempt to get or put with a new key.
-  // has_existing should be 0 (false).
-  key = "getorputkey";
-  int has_existing;
-  assert(kv = hash_map_get_or_put(&map, &key, &has_existing));
-  assert(has_existing == 0);
-
-  // Assign a value to the kv and ensure that we can get that value again.
-  val = 8195;
-  hash_map_kv_assign(&map, kv, &val);
-  assert(*((int *)hash_map_get_value(&map, &key)) == val);
 
   hash_map_deinit(&map);
 }
