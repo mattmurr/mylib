@@ -65,6 +65,16 @@ int main() {
   // Check we have an intersection.
   assert(bitset_intersects(&bs, &other));
 
+  // Check that we can create a bitset from intersecting bits
+  {
+    Bitset intersection;
+    assert(!bitset_intersect(&bs, &other, &intersection));
+
+    assert(bitset_count(&intersection) == 1);
+
+    bitset_deinit(&intersection);
+  }
+
   // Remove 10 from `other` and there should no longer be an intersection.
   bitset_excl(&other, 10);
   assert(!bitset_intersects(&bs, &other));

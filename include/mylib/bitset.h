@@ -56,6 +56,7 @@ int bitset_is_proper_subset(const Bitset *a, const Bitset *b);
 // `b` and `b` has all of it's elements in `a`.
 int bitset_eql(const void *a, const void *b);
 
+int bitset_intersect(const Bitset *a, const Bitset *b, Bitset *result);
 int bitset_intersects(const Bitset *a, const Bitset *b);
 
 int bitset_union(const Bitset *a, const Bitset *b, Bitset *result);

@@ -186,6 +186,28 @@ int bitset_eql(const void *a, const void *b) {
   return 1;
 }
 
+int bitset_intersect(const Bitset *a, const Bitset *b, Bitset *result) {
+  assert(a != NULL);
+  assert(b != NULL);
+
+  assert(result != NULL);
+
+  const Bitset *smallest = a->max > b->max ? b : a;
+
+  if (bitset_clone(smallest, result))
+    return EXIT_FAILURE;
+
+  const Bitset *largest = smallest == a ? b : a;
+  // Loop over the bits in the smallest bitset and check if they also exist in
+  // the largest bitset, if not, simply remove the bit from the result
+  for (size_t i = 0; bitset_next(smallest, &i); i++) {
+    if (!bitset_has(largest, i))
+      bitset_excl(result, i);
+  }
+
+  return EXIT_SUCCESS;
+}
+
 int bitset_intersects(const Bitset *a, const Bitset *b) {
   assert(a != NULL);
   assert(b != NULL);
