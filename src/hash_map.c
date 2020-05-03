@@ -303,9 +303,18 @@ HashMapKV *hash_map_next(HashMapIterator *iterator) {
   if (iterator->map == NULL || iterator->map->size == 0)
     return NULL;
 
-  while (iterator->bucket_idx < iterator->map->capacity)
-    if ((iterator->node = iterator->map->buckets[iterator->bucket_idx++].first))
-      return iterator->node->data;
+  if (iterator->node) {
+    iterator->node = iterator->node->next;
+    if (!iterator->node)
+      goto next_bucket;
+  } else {
+  next_bucket:
+    do {
+      if (++iterator->bucket_idx >= iterator->map->capacity)
+        return NULL;
+      iterator->node = iterator->map->buckets[iterator->bucket_idx].first;
+    } while (!iterator->node);
+  }
 
-  return NULL;
+  return iterator->node->data;
 }
