@@ -161,7 +161,7 @@ void hash_map_deinit(HashMap *map) {
 
 size_t hash_map_count(const HashMap *map) {
   assert(map != NULL);
-  return map != NULL ? map->size : 0;
+  return map->size;
 }
 
 static HashMapKV *find_key(LinkedListNode *node, const void *key,
@@ -203,7 +203,6 @@ int hash_map_put(HashMap *map, void *key, void *value) {
     // The bucket does not contain the key so we can prepend a new node.
     if (prepend(map, bucket, key, value))
       return EXIT_FAILURE;
-    map->size++;
   }
 
   return EXIT_SUCCESS;

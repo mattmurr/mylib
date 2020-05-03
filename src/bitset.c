@@ -160,10 +160,9 @@ int bitset_is_subset(const Bitset *a, const Bitset *b) {
   assert(a != NULL);
   assert(b != NULL);
 
-  for (size_t i = 0; bitset_next(a, &i); i++) {
+  for (size_t i = 0; bitset_next(a, &i); i++)
     if (!bitset_has(b, i))
       return 0;
-  }
   return 1;
 }
 
